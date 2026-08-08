@@ -1,63 +1,89 @@
-│   │   │   ├── page.tsx        # 首页（分页 + 置顶）
-│   │   │   ├── posts/[slug]/   # 文章详情（TOC + 进度条 + 相关文章）
-│   │   │   ├── tags/           # 标签云 / 标签详情
-│   │   │   ├── categories/     # 分类树 / 分类详情
-│   │   │   ├── archive/        # 按年月归档
-│   │   │   ├── search/         # 全文搜索
-│   │   │   ├── about/          # 关于页面
-│   │   │   ├── subscribe/      # 邮件订阅
-│   │   │   ├── feed.xml/       # RSS 2.0
-│   │   │   ├── atom.xml/       # Atom
-│   │   │   ├── feed.json/      # JSON Feed
-│   │   │   └── sitemap.xml/    # Sitemap
-│   │   ├── admin/              # 后台管理
-│   │   │   ├── page.tsx        # 数据看板
-│   │   │   ├── posts/          # 文章管理
-│   │   │   ├── tags/           # 标签管理
-│   │   │   ├── categories/     # 分类管理
-│   │   │   ├── comments/       # 评论审核
-│   │   │   └── settings/       # 站点设置
-│   │   ├── auth/               # 登录
-│   │   └── api/                # API 路由
-│   │       ├── admin/          # 管理 API（需认证）
-│   │       ├── auth/           # NextAuth 认证
-│   │       ├── comments/       # 公开评论 API
-│   │       ├── search/         # 搜索 API
-│   │       └── subscribe/      # 订阅 API
-│   ├── components/
-│   │   ├── layout/             # Header / Footer / Sidebar
-│   │   ├── post/               # PostCard / PostContent / PostTOC / PostNav / ReadingProgress / RelatedPosts
-│   │   ├── comment/            # CommentList / CommentForm
-│   │   ├── search/             # SearchBar / SearchResults
-│   │   ├── tags/               # TagBadge / TagCloud
-│   │   ├── theme/              # ThemeProvider / ThemeToggle
-│   │   └── ui/                 # Pagination / Skeleton / EmptyState
-│   ├── lib/                    # 工具库
-│   │   ├── markdown.ts         # Markdown 渲染引擎（unified 管线）
-│   │   ├── posts.ts            # 文章查询
-│   │   ├── tags.ts             # 标签查询
-│   │   ├── categories.ts       # 分类查询
-│   │   ├── search.ts           # Fuse.js 搜索
-│   │   ├── rss.ts              # RSS / Atom / JSON Feed 生成
-│   │   ├── sitemap.ts          # Sitemap 生成
-│   │   ├── comments.ts         # 评论 CRUD
-│   │   ├── seo.ts              # SEO 元数据
-│   │   ├── auth.ts             # NextAuth 配置
-│   │   ├── email.ts            # 邮件模板
-│   │   ├── db.ts               # PrismaClient 单例
-│   │   └── utils.ts            # 通用工具函数
-│   ├── hooks/                  # useDebounce / useLocalStorage
-│   ├── styles/                 # 全局样式（Tailwind）
-│   └── types/                  # TypeScript 类型定义
-├── .env.example                # 环境变量示例
-├── package.json
-├── tsconfig.json
-├── next.config.ts
-└── tailwind.config.ts
+|------|------|
+| **User** | 用户（管理员/编辑，含角色、密码哈希、社交链接） |
+| **Account** | OAuth 账号关联（NextAuth） |
+| **Session** | 会话管理（NextAuth） |
+| **VerificationToken** | 邮箱验证令牌 |
+| **Post** | 文章（Markdown 内容 + HTML 缓存 + 标签关联 + 分类 + 阅读量/点赞数） |
+| **Category** | 分类（支持多级树形结构，含 self-referencing parentId） |
+| **Tag** | 标签（含颜色标识和文章计数） |
+| **PostTag** | 文章-标签多对多关联 |
+| **Comment** | 评论（支持嵌套回复、审核状态、IP/UA 记录） |
+| **SiteSetting** | 站点键值对设置 |
+| **Subscription** | 邮件订阅（含退订 token） |
+| **FriendLink** | 友情链接 |
+
+---
+
+## API 参考
+
+### 公开 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/search?q=` | 全文搜索 |
+| GET | `/api/comments?postId=` | 获取文章评论 |
+| POST | `/api/comments` | 提交评论 |
+| POST | `/api/subscribe` | 邮件订阅 |
+| DELETE | `/api/subscribe?token=` | 退订 |
+| GET | `/feed.xml` | RSS 2.0 |
+| GET | `/atom.xml` | Atom |
+| GET | `/feed.json` | JSON Feed |
+| GET | `/sitemap.xml` | Sitemap |
+
+### 管理 API（需认证）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/admin/posts` | 文章列表 |
+| POST | `/api/admin/posts` | 创建文章 |
+| PUT | `/api/admin/posts` | 更新文章 |
+| DELETE | `/api/admin/posts` | 删除文章 |
+| GET | `/api/admin/tags` | 标签列表 |
+| POST | `/api/admin/tags` | 创建标签 |
+| DELETE | `/api/admin/tags` | 删除标签 |
+| GET | `/api/admin/categories` | 分类列表 |
+| POST | `/api/admin/categories` | 创建分类 |
+| DELETE | `/api/admin/categories` | 删除分类 |
+| GET | `/api/admin/comments` | 评论列表 |
+| PUT | `/api/admin/comments` | 审核评论 |
+| GET | `/api/admin/settings` | 获取站点设置 |
+| PUT | `/api/admin/settings` | 更新站点设置 |
+
+---
+
+## 环境变量
+
+```env
+# 数据库
+DATABASE_URL="file:./prisma/dev.db"
+
+# NextAuth 认证
+NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# 站点信息
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+NEXT_PUBLIC_SITE_TITLE="Personal Blog"
+NEXT_PUBLIC_SITE_DESCRIPTION="个人技术博客，分享编程、技术与生活感悟。"
 ```
 
 ---
 
-## 数据模型
+## 常用命令
 
-| 模型 | 说明 |
+```bash
+# 开发
+npm run dev          # 启动开发服务器（Turbopack）
+
+# 构建
+npm run build        # 生产构建
+npm start            # 启动生产服务器
+
+# 数据库
+npx prisma db push   # 同步数据库 schema
+npx prisma db seed   # 写入种子数据
+npx prisma studio    # 打开数据库管理界面
+
+# 代码检查
+npm run lint         # ESLint 检查
+```

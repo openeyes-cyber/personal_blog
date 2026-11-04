@@ -1,54 +1,6 @@
-  color     String    @default("#6366f1")
-  postCount Int       @default(0)
-  createdAt DateTime  @default(now())
-  posts     PostTag[]
+  logo        String   @default("")
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  email       String   @default("")
+  createdAt   DateTime @default(now())
 }
-
-model PostTag {
-  postId String
-  tagId  String
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  @@id([postId, tagId])
-}
-
-model Comment {
-  id        String   @id @default(cuid())
-  postId    String
-  parentId  String?
-  author    String
-  email     String
-  website   String   @default("")
-  content   String
-  html      String   @default("")
-  status    String   @default("pending")
-  likeCount Int      @default(0)
-  userAgent String   @default("")
-  ipAddress String   @default("")
-  createdAt DateTime @default(now())
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies   Comment[] @relation("CommentReplies")
-  user      User?    @relation(fields: [authorId], references: [id])
-  authorId  String?
-}
-
-model SiteSetting {
-  key       String   @id
-  value     String
-  updatedAt DateTime @updatedAt
-}
-
-model Subscription {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  isActive  Boolean  @default(true)
-  token     String   @unique @default(cuid())
-  createdAt DateTime @default(now())
-}
-
-model FriendLink {
-  id          String   @id @default(cuid())
-  name        String
-  url         String
-  description String   @default("")

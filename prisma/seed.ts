@@ -1,89 +1,65 @@
-import { PrismaClient } from '@prisma/client';
-import { hash } from 'bcryptjs';
-import { renderMarkdown, extractExcerpt } from '../src/lib/markdown';
+- 开发工具与效率
+- 读书笔记与思考
 
-const prisma = new PrismaClient();
+### 代码示例
 
-async function main() {
-  console.log('🌱 开始播种数据...');
+\`\`\`typescript
+function greet(name: string): string {
+  return \`Hello, \${name}! Welcome to my blog.\`;
+}
 
-  // Clean existing data
-  await prisma.postTag.deleteMany();
-  await prisma.comment.deleteMany();
-  await prisma.post.deleteMany();
-  await prisma.tag.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.siteSetting.deleteMany();
-  await prisma.subscription.deleteMany();
-  await prisma.friendLink.deleteMany();
+console.log(greet('Reader'));
+\`\`\`
 
-  // Create admin user
-  const passwordHash = await hash('admin123', 12);
-  const admin = await prisma.user.create({
-    data: {
-      name: 'Admin',
-      email: 'admin@example.com',
-      passwordHash,
-      role: 'admin',
-      bio: '博客管理员',
+## 未来计划
+
+- [x] 搭建博客基础框架
+- [ ] 完成 10 篇以上技术文章
+- [ ] 优化 SEO 和性能
+- [ ] 添加评论系统
+
+感谢阅读，希望这个博客能对你有所帮助！`,
+      tags: ['入门', '博客'],
+      category: '杂谈',
+      featured: true,
     },
-  });
-  console.log('✅ 管理员账号: admin@example.com / admin123');
-
-  // Create categories
-  const categories = await Promise.all([
-    prisma.category.create({ data: { name: '技术', slug: 'tech', description: '技术相关文章', order: 1 } }),
-    prisma.category.create({ data: { name: '前端', slug: 'frontend', description: '前端开发', parentId: null, order: 2 } }),
-    prisma.category.create({ data: { name: '后端', slug: 'backend', description: '后端开发', parentId: null, order: 3 } }),
-    prisma.category.create({ data: { name: 'React', slug: 'react', description: 'React 相关', order: 4 } }),
-    prisma.category.create({ data: { name: '杂谈', slug: 'misc', description: '生活随笔', order: 5 } }),
-    prisma.category.create({ data: { name: '教程', slug: 'tutorial', description: '入门教程', order: 6 } }),
-  ]);
-
-  // Make frontend/backend children of tech
-  await prisma.category.update({ where: { slug: 'frontend' }, data: { parentId: categories[0].id } });
-  await prisma.category.update({ where: { slug: 'backend' }, data: { parentId: categories[0].id } });
-
-  console.log('✅ 分类已创建');
-
-  // Create tags
-  const tags = await Promise.all([
-    prisma.tag.create({ data: { name: 'Next.js', slug: 'nextjs', color: '#000000' } }),
-    prisma.tag.create({ data: { name: 'React', slug: 'react', color: '#61dafb' } }),
-    prisma.tag.create({ data: { name: 'TypeScript', slug: 'typescript', color: '#3178c6' } }),
-    prisma.tag.create({ data: { name: 'CSS', slug: 'css', color: '#1572b6' } }),
-    prisma.tag.create({ data: { name: 'JavaScript', slug: 'javascript', color: '#f7df1e' } }),
-    prisma.tag.create({ data: { name: '入门', slug: 'getting-started', color: '#10b981' } }),
-    prisma.tag.create({ data: { name: '进阶', slug: 'advanced', color: '#f59e0b' } }),
-    prisma.tag.create({ data: { name: '架构', slug: 'architecture', color: '#8b5cf6' } }),
-    prisma.tag.create({ data: { name: '博客', slug: 'blog', color: '#ec4899' } }),
-    prisma.tag.create({ data: { name: 'Node.js', slug: 'nodejs', color: '#339933' } }),
-    prisma.tag.create({ data: { name: '数据库', slug: 'database', color: '#336791' } }),
-    prisma.tag.create({ data: { name: 'DevOps', slug: 'devops', color: '#fc6d26' } }),
-  ]);
-  console.log('✅ 标签已创建');
-
-  // Sample posts data
-  const samplePosts = [
     {
-      slug: 'hello-world',
-      title: 'Hello World — 我的第一篇博客',
-      content: `## 为什么开始写博客？
+      slug: 'getting-started-with-nextjs',
+      title: 'Next.js 14 入门指南 — App Router 完全解读',
+      content: `## 什么是 Next.js？
 
-写博客的念头由来已久。作为一个开发者，每天都要面对大量的新知识、新技术和踩过的坑，如果不记录下来，很快就会遗忘。
+Next.js 是一个基于 React 的全栈框架，提供了服务端渲染、静态生成、文件系统路由等开箱即用的功能。
 
-### 写博客的好处
+## App Router vs Pages Router
 
-1. **加深理解** — 教是最好的学，把知识写下来能帮助自己理清思路
-2. **积累沉淀** — 技术笔记是开发者最宝贵的资产之一
-3. **分享交流** — 帮助他人，也收获反馈
+Next.js 14 推荐使用 App Router，它基于 React Server Components 构建。
 
-> "Talk is cheap. Show me the code." — Linus Torvalds
+### 核心概念
 
-## 博客建设目标
+| 特性 | App Router | Pages Router |
+|------|-----------|-------------|
+| 路由方式 | 文件系统 | 文件系统 |
+| 组件模型 | Server Components | Client Components |
+| 布局 | ✅ 嵌套布局 | ❌ 需要手动实现 |
+| 加载态 | ✅ loading.tsx | ❌ |
+| 错误处理 | ✅ error.tsx | ❌ |
 
-这个博客将主要涵盖以下内容：
+### 文件约定
 
-- 前端技术分享（React / Next.js / TypeScript）
-- 后端架构设计
+\`\`\`
+app/
+├── layout.tsx    # 根布局
+├── page.tsx      # 页面
+├── loading.tsx   # 加载状态
+├── error.tsx     # 错误处理
+├── not-found.tsx # 404
+└── [slug]/
+    └── page.tsx  # 动态路由
+\`\`\`
+
+### 数据获取
+
+\`\`\`tsx
+// 服务端组件中直接 async
+async function getPosts() {
+  const res = await fetch('https://api.example.com/posts');

@@ -1,65 +1,60 @@
-- 开发工具与效率
-- 读书笔记与思考
-
-### 代码示例
-
-\`\`\`typescript
-function greet(name: string): string {
-  return \`Hello, \${name}! Welcome to my blog.\`;
+  return res.json();
 }
 
-console.log(greet('Reader'));
+export default async function Page() {
+  const posts = await getPosts();
+  return <PostList posts={posts} />;
+}
 \`\`\`
 
-## 未来计划
+## 总结
 
-- [x] 搭建博客基础框架
-- [ ] 完成 10 篇以上技术文章
-- [ ] 优化 SEO 和性能
-- [ ] 添加评论系统
-
-感谢阅读，希望这个博客能对你有所帮助！`,
-      tags: ['入门', '博客'],
-      category: '杂谈',
+Next.js 14 的 App Router 为 React 应用带来了全新的开发体验。`,
+      tags: ['Next.js', 'React', '入门'],
+      category: 'React',
       featured: true,
     },
     {
-      slug: 'getting-started-with-nextjs',
-      title: 'Next.js 14 入门指南 — App Router 完全解读',
-      content: `## 什么是 Next.js？
+      slug: 'typescript-advanced-patterns',
+      title: 'TypeScript 高级类型模式',
+      content: `## 条件类型
 
-Next.js 是一个基于 React 的全栈框架，提供了服务端渲染、静态生成、文件系统路由等开箱即用的功能。
+\`\`\`typescript
+type IsString<T> = T extends string ? true : false;
 
-## App Router vs Pages Router
-
-Next.js 14 推荐使用 App Router，它基于 React Server Components 构建。
-
-### 核心概念
-
-| 特性 | App Router | Pages Router |
-|------|-----------|-------------|
-| 路由方式 | 文件系统 | 文件系统 |
-| 组件模型 | Server Components | Client Components |
-| 布局 | ✅ 嵌套布局 | ❌ 需要手动实现 |
-| 加载态 | ✅ loading.tsx | ❌ |
-| 错误处理 | ✅ error.tsx | ❌ |
-
-### 文件约定
-
-\`\`\`
-app/
-├── layout.tsx    # 根布局
-├── page.tsx      # 页面
-├── loading.tsx   # 加载状态
-├── error.tsx     # 错误处理
-├── not-found.tsx # 404
-└── [slug]/
-    └── page.tsx  # 动态路由
+type A = IsString<'hello'>;  // true
+type B = IsString<42>;       // false
 \`\`\`
 
-### 数据获取
+## 映射类型
 
-\`\`\`tsx
-// 服务端组件中直接 async
-async function getPosts() {
-  const res = await fetch('https://api.example.com/posts');
+\`\`\`typescript
+type Readonly<T> = {
+  readonly [P in keyof T]: T[P];
+};
+
+type Optional<T> = {
+  [P in keyof T]?: T[P];
+};
+\`\`\`
+
+## 模板字面量类型
+
+\`\`\`typescript
+type EventName = \`on\${Capitalize<string>}\`;
+// 'onChange' | 'onClick' | 'onSubmit' | ...
+\`\`\`
+
+## 总结
+
+掌握这些高级类型模式能让你写出更安全、更灵活的 TypeScript 代码。`,
+      tags: ['TypeScript', '进阶'],
+      category: '前端',
+      featured: false,
+    },
+    {
+      slug: 'css-grid-complete-guide',
+      title: 'CSS Grid 完全指南 — 从入门到实战',
+      content: `## 什么是 Grid？
+
+CSS Grid 是一个二维布局系统，可以同时控制行和列。

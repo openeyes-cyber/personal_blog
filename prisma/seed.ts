@@ -1,58 +1,64 @@
-
-## 基础概念
-
-\`\`\`css
-.container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  const db = await connectDB();
+  return db.query('SELECT * FROM posts');
 }
 \`\`\`
 
-## 常用布局模式
+## 最佳实践
 
-### 圣杯布局
-
-\`\`\`css
-.layout {
-  display: grid;
-  grid-template: 
-    "header header header" 60px
-    "nav    main   aside" 1fr
-    "footer footer footer" 100px
-    / 200px 1fr 200px;
-}
-\`\`\`
+- 尽可能使用 Server Components
+- 只在需要交互时使用 'use client'
+- 合理使用 Suspense 边界
 
 ## 总结
 
-Grid 是现代 CSS 布局的首选方案。`,
-      tags: ['CSS', '入门'],
-      category: '前端',
-      featured: false,
+RSC 代表了 React 的演进方向，值得每个 React 开发者深入学习。`,
+      tags: ['React', 'Next.js', '架构', '进阶'],
+      category: 'React',
+      featured: true,
     },
-    {
-      slug: 'react-server-components',
-      title: 'React Server Components 深度解析',
-      content: `## 什么是 Server Components？
+  ];
 
-React Server Components 允许组件在服务端渲染，并将结果发送给客户端。
+  // Create posts
+  for (const postData of samplePosts) {
+    const { html, wordCount, readingTime } = await renderMarkdown(postData.content);
+    const excerpt = extractExcerpt(postData.content);
+    const category = categories.find(c => c.name === postData.category);
+    const postTags = tags.filter(t => postData.tags.includes(t.name));
 
-## 核心优势
+    const post = await prisma.post.create({
+      data: {
+        slug: postData.slug,
+        title: postData.title,
+        content: postData.content,
+        html,
+        excerpt,
+        coverImage: '',
+        categoryId: category?.id || null,
+        status: 'published',
+        isFeatured: postData.featured,
+        wordCount,
+        readingTime,
+        publishedAt: new Date(),
+        authorId: admin.id,
+        tags: {
+          create: postTags.map(tag => ({ tagId: tag.id })),
+        },
+      },
+    });
 
-### 1. 零 Bundle 大小
+    // Update tag counts
+    for (const tag of postTags) {
+      await prisma.tag.update({ where: { id: tag.id }, data: { postCount: { increment: 1 } } });
+    }
 
-\`\`\`tsx
-// Server Component — 不会增加客户端 JS 体积
-import { marked } from 'marked';
+    // Update category count
+    if (category) {
+      await prisma.category.update({ where: { id: category.id }, data: { postCount: { increment: 1 } } });
+    }
 
-export default function Post({ content }: { content: string }) {
-  return <div dangerouslySetInnerHTML={{ __html: marked(content) }} />;
-}
-\`\`\`
+    console.log(`  📝 文章: ${post.title}`);
+  }
 
-### 2. 直接访问后端
-
-\`\`\`tsx
-// 无需 API 层
-async function getData() {
+  // Create sample comments
+  const posts = await prisma.post.findMany();
+  if (posts.length > 0) {

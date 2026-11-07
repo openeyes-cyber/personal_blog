@@ -1,64 +1,64 @@
-  const db = await connectDB();
-  return db.query('SELECT * FROM posts');
-}
-\`\`\`
-
-## 最佳实践
-
-- 尽可能使用 Server Components
-- 只在需要交互时使用 'use client'
-- 合理使用 Suspense 边界
-
-## 总结
-
-RSC 代表了 React 的演进方向，值得每个 React 开发者深入学习。`,
-      tags: ['React', 'Next.js', '架构', '进阶'],
-      category: 'React',
-      featured: true,
-    },
-  ];
-
-  // Create posts
-  for (const postData of samplePosts) {
-    const { html, wordCount, readingTime } = await renderMarkdown(postData.content);
-    const excerpt = extractExcerpt(postData.content);
-    const category = categories.find(c => c.name === postData.category);
-    const postTags = tags.filter(t => postData.tags.includes(t.name));
-
-    const post = await prisma.post.create({
+    const comment1 = await prisma.comment.create({
       data: {
-        slug: postData.slug,
-        title: postData.title,
-        content: postData.content,
-        html,
-        excerpt,
-        coverImage: '',
-        categoryId: category?.id || null,
-        status: 'published',
-        isFeatured: postData.featured,
-        wordCount,
-        readingTime,
-        publishedAt: new Date(),
-        authorId: admin.id,
-        tags: {
-          create: postTags.map(tag => ({ tagId: tag.id })),
-        },
+        postId: posts[0].id,
+        author: '张三',
+        email: 'zhangsan@example.com',
+        content: '写得很棒！期待更多内容。',
+        html: '<p>写得很棒！期待更多内容。</p>',
+        status: 'approved',
       },
     });
 
-    // Update tag counts
-    for (const tag of postTags) {
-      await prisma.tag.update({ where: { id: tag.id }, data: { postCount: { increment: 1 } } });
-    }
+    await prisma.comment.create({
+      data: {
+        postId: posts[0].id,
+        parentId: comment1.id,
+        author: 'Admin',
+        email: 'admin@example.com',
+        content: '感谢支持！会持续更新的。',
+        html: '<p>感谢支持！会持续更新的。</p>',
+        status: 'approved',
+        authorId: admin.id,
+      },
+    });
 
-    // Update category count
-    if (category) {
-      await prisma.category.update({ where: { id: category.id }, data: { postCount: { increment: 1 } } });
-    }
-
-    console.log(`  📝 文章: ${post.title}`);
+    await prisma.comment.create({
+      data: {
+        postId: posts[0].id,
+        author: '李四',
+        email: 'lisi@example.com',
+        content: '很好的文章，收藏了！',
+        html: '<p>很好的文章，收藏了！</p>',
+        status: 'pending',
+      },
+    });
   }
+  console.log('✅ 评论已创建');
 
-  // Create sample comments
-  const posts = await prisma.post.findMany();
-  if (posts.length > 0) {
+  // Create site settings
+  await prisma.siteSetting.createMany({
+    data: [
+      { key: 'title', value: 'Personal Blog' },
+      { key: 'description', value: '个人技术博客，分享编程、技术与生活感悟。' },
+      { key: 'seoDescription', value: '个人技术博客，专注于 React、Next.js、TypeScript 等前端技术分享。' },
+      { key: 'keywords', value: '技术博客,前端,React,Next.js,TypeScript,编程' },
+    ],
+  });
+  console.log('✅ 站点设置已创建');
+
+  // Create friend links
+  await prisma.friendLink.createMany({
+    data: [
+      { name: 'Next.js', url: 'https://nextjs.org', description: 'Next.js 官方文档', isActive: true },
+      { name: 'React', url: 'https://react.dev', description: 'React 官方文档', isActive: true },
+    ],
+  });
+  console.log('✅ 友链已创建');
+
+  console.log('\n🎉 数据播种完成!');
+  console.log('📧 管理员: admin@example.com / admin123');
+}
+
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());
